@@ -22,16 +22,8 @@ const Checkout: React.FC = () => {
   const [saveAddress, setSaveAddress] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<string[]>([]);
 
-  if (items.length === 0) {
-    return (
-      <PageContainer className="py-20 text-center">
-        <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
-        <button onClick={() => navigate('/menu')} className="text-primary hover:underline">
-          Go to Menu
-        </button>
-      </PageContainer>
-    );
-  }
+  // Move validation logic after hooks to avoid conditional hook execution
+  const isCartEmpty = items.length === 0;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -51,6 +43,17 @@ const Checkout: React.FC = () => {
     };
     fetchProfile();
   }, [user]);
+
+  if (isCartEmpty) {
+    return (
+      <PageContainer className="py-20 text-center">
+        <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
+        <button onClick={() => navigate('/menu')} className="text-primary hover:underline">
+          Go to Menu
+        </button>
+      </PageContainer>
+    );
+  }
 
   const handleLocationSelect = (location: { address: string; lat: number; lng: number }) => {
       setAddress(location.address);
@@ -96,9 +99,13 @@ const Checkout: React.FC = () => {
 
       clearCart();
       navigate('/order-success');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Checkout Error:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to place order');
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || err.message || 'Failed to place order');
+      } else {
+        setError((err as Error).message || 'Failed to place order');
+      }
     } finally {
       setLoading(false);
     }

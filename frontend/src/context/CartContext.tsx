@@ -24,16 +24,11 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-
-  // Load cart from local storage on mount
-  useEffect(() => {
+  const [items, setItems] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem('gkr_cart');
-    if (savedCart) {
-      setItems(JSON.parse(savedCart));
-    }
-  }, []);
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Save cart to local storage on change
   useEffect(() => {
@@ -95,6 +90,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) throw new Error('useCart must be used within a CartProvider');

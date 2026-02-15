@@ -10,12 +10,22 @@ import {
   Utensils
 } from 'lucide-react';
 
+interface ActivityMetadata {
+  orderId?: string;
+  plan?: string;
+  date?: string;
+  totalItems?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
 interface Activity {
   activityId: string;
+  userId: string;
   type: 'order' | 'subscription' | 'skip' | 'customization' | 'cancel';
   action: string;
   description: string;
-  metadata: any;
+  metadata: ActivityMetadata;
   createdAt: string;
 }
 
@@ -98,7 +108,7 @@ const ActivityTimeline: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {activities.map((activity, _idx) => (
+      {activities.map((activity) => (
         <div
           key={activity.activityId}
           className={`border-l-4 ${getActivityColor(activity.type)} p-5 rounded-r-lg shadow-sm hover:shadow-md transition`}

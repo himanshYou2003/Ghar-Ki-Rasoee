@@ -23,7 +23,7 @@ const SubscriptionCheckout: React.FC = () => {
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('card');
-  const [paymentResult, setPaymentResult] = useState<any>(null);
+  const [paymentResult, setPaymentResult] = useState<{ transactionId: string } | null>(null);
 
   if (!plan) {
     return (
@@ -36,6 +36,7 @@ const SubscriptionCheckout: React.FC = () => {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePaymentSubmit = async (paymentData: any) => {
     setLoading(true);
     setError('');
@@ -88,9 +89,13 @@ const SubscriptionCheckout: React.FC = () => {
       } else {
         throw new Error(paymentResponse.data.data.message || 'Payment failed');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Payment Error:", err);
-      setError(err.response?.data?.data?.message || err.message || "Payment processing failed");
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.data?.message || err.message || "Payment processing failed");
+      } else {
+        setError((err as Error).message || "Payment processing failed");
+      }
     } finally {
       setLoading(false);
     }

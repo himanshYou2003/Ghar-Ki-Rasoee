@@ -20,7 +20,9 @@ const ViewCustomerCustomization: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customization, setCustomization] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [planType, setPlanType] = useState<'basic' | 'standard' | 'premium'>('standard');
   const [addressExpanded, setAddressExpanded] = useState(false);

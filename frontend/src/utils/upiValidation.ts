@@ -22,13 +22,13 @@ const VALID_UPI_HANDLES = [
  * Format: name@bank or mobilenumber@bank
  */
 export const validateUPI = (upiId: string): boolean => {
-  const upiRegex = /^[\w\.-]+@[a-zA-Z]{2,}$/;
+  const upiRegex = /^[\w.-]+@[a-zA-Z]{2,}$/;
   
   if (!upiRegex.test(upiId)) {
     return false;
   }
 
-  const [_, handle] = upiId.split('@');
+  const handle = upiId.split('@')[1];
   
   // Check if handle is in valid list
   return VALID_UPI_HANDLES.includes(handle.toLowerCase());

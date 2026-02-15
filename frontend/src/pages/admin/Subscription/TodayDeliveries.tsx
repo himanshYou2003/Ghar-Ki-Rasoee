@@ -27,7 +27,7 @@ interface Delivery {
   address: string;
   plan: string;
   mealPreference: 'Veg' | 'Non-Veg';
-  todayCustomization: any;
+  todayCustomization: Record<string, string | number>;
   deliveryStatus: string;
   day: string;
 }

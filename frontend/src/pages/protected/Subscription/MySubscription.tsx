@@ -7,6 +7,25 @@ import PageContainer from '../../../components/layout/PageContainer';
 import { Calendar, Edit, Crown, ShoppingBag, Utensils } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+interface DayPreferences {
+  sabzi1?: string;
+  sabzi2?: string;
+  specialFood?: string;
+  dessert?: string;
+}
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles: Record<string, string> = {
+    'Active': 'bg-green-100 text-green-800',
+    'Cancelled': 'bg-red-100 text-red-800',
+  };
+  return (
+    <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+      {status}
+    </span>
+  );
+};
+
 const MySubscription: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -88,17 +107,8 @@ const MySubscription: React.FC = () => {
 
   const isLoading = isSubLoading || (!!subscription?.subscriptionId && isCustomLoading);
 
-  const StatusBadge = ({ status }: { status: string }) => {
-    const styles: Record<string, string> = {
-      'Active': 'bg-green-100 text-green-800',
-      'Cancelled': 'bg-red-100 text-red-800',
-    };
-    return (
-      <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
-      </span>
-    );
-  };
+  // StatusBadge moved outside
+
 
   if (isLoading) {
     return (
@@ -146,13 +156,13 @@ const MySubscription: React.FC = () => {
         {/* Main Subscription Card */}
         <div className="md:col-span-2">
           <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20 rounded-xl p-8">
-            <div className="flex justify-between items-start mb-6">
+            <div className="flex flex-col md:flex-row md:justify-between items-start gap-4 mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <Crown className="text-primary" size={32} />
-                  <h2 className="text-3xl font-bold text-text-primary">{subscription.plan} Plan</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-text-primary">{subscription.plan} Plan</h2>
                 </div>
-                <p className="text-text-secondary">100% Shudh Desi Ghee • 6 Days/Week</p>
+                <p className="text-text-secondary text-sm md:text-base">100% Shudh Desi Ghee • 6 Days/Week</p>
               </div>
               <StatusBadge status={subscription.status} />
             </div>
@@ -177,17 +187,17 @@ const MySubscription: React.FC = () => {
               <p className="text-text-primary">{subscription.deliveryAddress || 'Not specified'}</p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               <button 
                 onClick={() => navigate('/subscription/customize')}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition w-full sm:w-auto"
               >
                 <Edit size={18} />
                 Customize Meals
               </button>
               <button 
                 onClick={() => navigate('/pricing')}
-                className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+                className="flex items-center justify-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition w-full sm:w-auto"
               >
                 Change Plan
               </button>
@@ -195,13 +205,13 @@ const MySubscription: React.FC = () => {
                 <>
                   <button 
                     onClick={() => setIsSkipModalOpen(true)}
-                    className="px-5 py-2.5 bg-yellow-50 border-2 border-yellow-400 text-yellow-700 rounded-lg font-medium hover:bg-yellow-100 transition"
+                    className="flex items-center justify-center px-5 py-2.5 bg-yellow-50 border-2 border-yellow-400 text-yellow-700 rounded-lg font-medium hover:bg-yellow-100 transition w-full sm:w-auto"
                   >
                     Skip Tomorrow
                   </button>
                   <button 
                     onClick={() => setIsCancelModalOpen(true)}
-                    className="px-5 py-2.5 border-2 border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition"
+                    className="flex items-center justify-center px-5 py-2.5 border-2 border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition w-full sm:w-auto"
                   >
                     Cancel Subscription
                   </button>
@@ -218,7 +228,7 @@ const MySubscription: React.FC = () => {
                 Your Menu Preferences
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(customizations.preferences).map(([day, prefs]: [string, any]) => {
+                {(Object.entries(customizations.preferences) as [string, DayPreferences][]).map(([day, prefs]) => {
                   const dayName = day.charAt(0).toUpperCase() + day.slice(1);
                   return (
                     <div key={day} className="bg-white rounded-lg p-4 border border-gray-200">

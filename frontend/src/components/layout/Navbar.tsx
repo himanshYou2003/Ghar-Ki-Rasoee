@@ -89,15 +89,17 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 shadow-lg animate-fade-in">
-          <div className="px-4 pt-2 pb-4 space-y-2">
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-xl animate-fade-in z-40">
+          <div className="px-4 pt-2 pb-6 space-y-2">
             {allNavLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
                 onClick={() => setIsOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive(link.path) ? 'text-primary bg-primary/5' : 'text-text-secondary hover:text-primary hover:bg-gray-50'
+                className={`block px-4 py-3 rounded-xl text-base font-medium transition-all ${
+                  isActive(link.path) 
+                    ? 'text-primary bg-primary/10 pl-5' 
+                    : 'text-text-secondary hover:text-primary hover:bg-gray-50'
                 }`}
               >
                 {link.name}

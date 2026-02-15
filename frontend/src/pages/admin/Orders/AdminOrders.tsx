@@ -130,7 +130,66 @@ const AdminOrders: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {filteredOrders.map((order) => (
+          <div key={order.orderId} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <span className="text-xs font-medium text-gray-500">Order #{order.orderId?.slice(0, 8)}</span>
+                <h3 className="font-semibold text-gray-900">{order.customerName || `User ${order.userId?.slice(0,5)}`}</h3>
+              </div>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                {order.status}
+              </span>
+            </div>
+            
+            <div className="space-y-2 text-sm text-gray-600 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-4">📅</span>
+                <span>{new Date(order.createdAt || '').toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-4">📍</span>
+                <span className="truncate">{order.deliveryAddress || 'No address'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-4">🥗</span>
+                <span className={getPlanStyles(order.plan)}>
+                   {order.plan || Object.keys(order.items || {}).length + ' items'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <select
+                  value={order.status}
+                  onChange={(e) => updateStatusMutation.mutate({ orderId: order.orderId!, newStatus: e.target.value })}
+                  className="text-sm border border-gray-200 rounded px-2 py-1 bg-white focus:ring-2 focus:ring-primary/20 outline-none w-32"
+                >
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Cooking">Cooking</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this order?')) {
+                      deleteOrderMutation.mutate(order.orderId!);
+                    }
+                  }}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 size={18} />
+                </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">

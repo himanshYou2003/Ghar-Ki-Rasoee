@@ -183,8 +183,64 @@ const AdminSubscriptions: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {filteredSubscriptions.map((sub) => (
+          <div key={sub.subscriptionId} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+             <div className="flex justify-between items-start mb-3">
+                <div>
+                   <h3 className="font-semibold text-gray-900">{sub.userName || 'Unknown User'}</h3>
+                   <span className="text-xs text-gray-500">ID: {sub.subscriptionId.slice(0, 8)}</span>
+                </div>
+                <StatusBadge status={sub.status} />
+             </div>
+
+             <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                <div className="bg-gray-50 p-2 rounded-lg">
+                   <p className="text-xs text-gray-500">Plan</p>
+                   <p className="font-medium text-gray-900">{sub.plan}</p>
+                </div>
+                <div className="bg-gray-50 p-2 rounded-lg">
+                   <p className="text-xs text-gray-500">Price</p>
+                   <p className="font-bold text-gray-900">${getPlanPrice(sub)}</p>
+                </div>
+             </div>
+
+             <div className="space-y-1 text-xs text-gray-600 mb-3">
+                <div className="flex justify-between">
+                   <span>Start:</span>
+                   <span className="font-medium">{new Date(sub.startDate).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between">
+                   <span>End:</span>
+                   <span className="font-medium text-primary-dark">{new Date(sub.endDate).toLocaleDateString()}</span>
+                </div>
+             </div>
+
+             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                   <span className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase ${sub.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                     {sub.paymentStatus}
+                   </span>
+                   <span className="text-xs text-gray-500">{sub.paymentMethod}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this subscription?')) {
+                      deleteSubscriptionMutation.mutate(sub.subscriptionId);
+                    }
+                  }}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                >
+                  <Trash2 size={16} />
+                </button>
+             </div>
+          </div>
+        ))}
+      </div>
+
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -195,7 +251,7 @@ const AdminSubscriptions: React.FC = () => {
                 <th className="p-4 font-bold text-gray-700 text-xs uppercase tracking-wider">Status</th>
                 <th className="p-4 font-bold text-gray-700 text-xs uppercase tracking-wider">Dates</th>
                 <th className="p-4 font-bold text-gray-700 text-xs uppercase tracking-wider">Payment info</th>
-                <th className="p-4 font-bold text-gray-700 text-xs uppercase tracking-wider font-bold">Actions</th>
+                <th className="p-4 font-bold text-gray-700 text-xs uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

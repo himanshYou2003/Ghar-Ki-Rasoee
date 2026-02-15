@@ -179,10 +179,10 @@ const CustomizeSubscription: React.FC = () => {
         </button>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-text-primary mb-2">Customize Your Meals</h1>
-            <p className="text-text-secondary">Choose your preferred dishes for each day</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">Customize Your Meals</h1>
+            <p className="text-text-secondary text-sm md:text-base">Choose your preferred dishes for each day</p>
           </div>
-          <div className="bg-primary/10 px-6 py-3 rounded-lg border-2 border-primary/20">
+          <div className="bg-primary/10 px-6 py-3 rounded-lg border-2 border-primary/20 w-fit">
             <p className="text-sm text-text-secondary">Your Plan</p>
             <p className="text-xl font-bold text-primary capitalize">{planType}</p>
           </div>
@@ -191,10 +191,10 @@ const CustomizeSubscription: React.FC = () => {
 
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Day Selector Sidebar */}
-        <div className="lg:col-span-3">
-          <div className="bg-white rounded-xl border border-gray-200 p-4 sticky top-20">
-            <h3 className="font-bold text-lg mb-4">Select Day</h3>
-            <div className="space-y-2">
+        <div className="col-span-12 lg:col-span-3">
+          <div className="bg-white lg:rounded-xl border-b lg:border border-gray-200 p-4 sticky top-[73px] lg:top-24 z-30 lg:z-0 -mx-4 lg:mx-0 shadow-sm lg:shadow-none overflow-x-auto lg:overflow-visible">
+            <h3 className="font-bold text-lg mb-4 hidden lg:block">Select Day</h3>
+            <div className="flex lg:flex-col space-x-3 lg:space-x-0 lg:space-y-2 min-w-max lg:min-w-0 px-1 lg:px-0">
               {days.map((day) => {
                 const dayMenu = weeklyMenu[day as keyof typeof weeklyMenu] as DayMenu;
                 const dayPrefs = preferences[day as keyof WeeklyPreferences];
@@ -212,15 +212,15 @@ const CustomizeSubscription: React.FC = () => {
                   <button
                     key={day}
                     onClick={() => setSelectedDay(day)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium transition-all ${
+                    className={`flex-shrink-0 lg:w-full flex items-center gap-2 lg:justify-between px-4 py-2 lg:py-3 rounded-full lg:rounded-lg font-medium transition-all text-sm lg:text-base border lg:border-0 ${
                       selectedDay === day
-                        ? 'bg-primary text-white shadow-md'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                        ? 'bg-primary text-white shadow-md border-primary'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200'
                     }`}
                   >
                     <span>{dayNames[day]}</span>
                     {isCompleteDay && (
-                      <Check size={18} className={selectedDay === day ? 'text-white' : 'text-green-600'} />
+                      <Check size={16} className={selectedDay === day ? 'text-white' : 'text-green-600'} />
                     )}
                   </button>
                 );

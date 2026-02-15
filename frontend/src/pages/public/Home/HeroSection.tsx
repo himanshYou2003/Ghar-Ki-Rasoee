@@ -18,8 +18,8 @@ const HeroSection: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight drop-shadow-md">
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto pt-20 md:pt-0">
+        <h1 className="text-3xl md:text-6xl font-bold text-white mb-6 tracking-tight drop-shadow-md leading-tight">
           Ghar Ki Rasoee, <br />
           <span className="text-primary-400">Away From Home</span>
         </h1>
@@ -39,10 +39,10 @@ const HeroSection: React.FC = () => {
              </button>
         </div>
 
-        <div className="mt-8 flex justify-center gap-6 text-white/90 text-sm font-medium">
-          <span className="flex items-center gap-1">🌿 Pure Veg Options</span>
-          <span className="flex items-center gap-1">🚚 Free Delivery</span>
-          <span className="flex items-center gap-1">🏠 Home Style</span>
+        <div className="mt-8 flex flex-wrap justify-center gap-4 md:gap-6 text-white/90 text-sm font-medium">
+          <span className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">🌿 Pure Veg Options</span>
+          <span className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">🚚 Free Delivery</span>
+          <span className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">🏠 Home Style</span>
         </div>
       </div>
 

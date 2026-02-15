@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 const AdminLayout: React.FC = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
 
   const handleLogout = async () => {
     try {
@@ -25,10 +25,21 @@ const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 overflow-x-hidden">
+      {/* Mobile Header Trigger */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-30 flex items-center px-4 justify-between">
+         <div className="flex items-center gap-2">
+            <img src="/logo.svg" alt="Logo" className="h-8 w-auto" />
+            <span className="font-bold text-lg text-primary">Ghar Ki Rasoee</span>
+         </div>
+         <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-600">
+            <Menu size={24} />
+         </button>
+      </div>
+
       {/* Sidebar */}
       <aside 
         className={`bg-slate-900 border-r border-slate-800 fixed inset-y-0 left-0 z-50 transition-all duration-300 shadow-2xl ${
-          isSidebarOpen ? 'w-64 overflow-x-hidden' : 'w-20 overflow-visible'
+          isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'
         }`}
       >
         <div className="h-full flex flex-col">
@@ -42,7 +53,13 @@ const AdminLayout: React.FC = () => {
             </div>
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+              className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors md:hidden"
+            >
+              <Menu size={20} />
+            </button>
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors hidden md:block"
             >
               <Menu size={20} />
             </button>
@@ -93,14 +110,22 @@ const AdminLayout: React.FC = () => {
           </div>
         </div>
       </aside>
+      
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
       <main 
         className={`min-h-screen transition-all duration-300 ${
-          isSidebarOpen ? 'ml-64' : 'ml-20'
-        }`}
+          isSidebarOpen ? 'md:ml-64 ml-0' : 'md:ml-20 ml-0'
+        } pt-20 md:pt-0`}
       >
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <Outlet />
         </div>
       </main>

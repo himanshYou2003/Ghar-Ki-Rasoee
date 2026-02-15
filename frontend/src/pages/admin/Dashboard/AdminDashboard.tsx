@@ -16,13 +16,14 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
+import { Order } from '../../../types/order';
 
 interface DashboardStats {
   totalOrders: number;
   totalUsers: number;
   totalRevenue: number;
   paymentMethods: { name: string; value: number }[];
-  recentOrders: any[];
+  recentOrders: Order[];
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -86,9 +87,9 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {/* Payment Methods Chart */}
-        <div className="bg-white p-6 rounded-xl min-h-[450px] flex flex-col" style={{ border: 'none !important', outline: 'none !important', boxShadow: 'none !important' } as React.CSSProperties}>
+        <div className="bg-white p-4 md:p-6 rounded-xl min-h-[400px] md:min-h-[450px] flex flex-col" style={{ border: 'none !important', outline: 'none !important', boxShadow: 'none !important' } as React.CSSProperties}>
            <style>
              {`
                .recharts-default-tooltip { border: none !important; box-shadow: none !important; outline: none !important; }
@@ -136,7 +137,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-xl" style={{ border: 'none !important', outline: 'none !important', boxShadow: 'none !important' } as React.CSSProperties}>
           <h3 className="text-lg font-semibold mb-6">Recent Orders</h3>
           <div className="space-y-4">
-            {stats.recentOrders.map((order: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+            {stats.recentOrders.map((order: Order) => (
               <div key={order.orderId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-white rounded-full text-primary">
@@ -144,7 +145,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div>
                         <p className="font-medium text-gray-900">Order #{order.orderId.slice(0, 6)}</p>
-                        <p className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                     </div>
                 </div>
                 <div className="text-right">
