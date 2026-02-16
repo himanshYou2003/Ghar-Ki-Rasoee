@@ -1,6 +1,7 @@
 const SubscriptionModel = require("../models/subscription.model");
 const OrderModel = require("../models/order.model");
 const admin = require("../config/firebase.config");
+const db = admin.firestore();
 
 class SchedulerService {
   static async generateDailyOrders() {
