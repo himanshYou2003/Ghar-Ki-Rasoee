@@ -44,7 +44,7 @@ const PlansSection: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 max-w-6xl mx-auto items-center mt-6 md:mt-0">
-          {plans.map((plan, index) => (
+          {plans.map((plan) => (
             <div 
               key={plan.name}
               className={`relative rounded-[2rem] p-6 sm:p-8 lg:p-10 transition-all duration-500 bg-white
