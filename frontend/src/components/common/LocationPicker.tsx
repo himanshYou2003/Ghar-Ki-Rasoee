@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation, X, Check } from 'lucide-react';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 // Fix for default marker icon in Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -64,7 +65,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ isOpen, onClose, onSele
 
     const handleUseCurrentLocation = () => {
         if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser');
+            toast.error('Geolocation is not supported by your browser');
             return;
         }
 
@@ -82,7 +83,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ isOpen, onClose, onSele
             (error) => {
                 console.error("Error getting location:", error);
                 setLoading(false);
-                alert('Unable to retrieve your location. Please check browser permissions.');
+                toast.error('Unable to retrieve your location. Please check browser permissions.');
             },
             {
                 enableHighAccuracy: true,

@@ -1,4 +1,5 @@
 import AppRoutes from './routes/AppRoutes';
+import { Toaster } from 'sonner';
 
 // import { CartProvider } from './context/CartContext';
 
@@ -10,6 +11,7 @@ function App() {
       <AuthProvider>
         {/* CartProvider Removed */}
           <AppRoutes />
+          <Toaster position="top-center" richColors />
       </AuthProvider>
     </div>
   );

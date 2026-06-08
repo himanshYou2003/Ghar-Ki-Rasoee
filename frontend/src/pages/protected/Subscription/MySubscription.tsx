@@ -6,6 +6,8 @@ import { ENV } from '../../../config/env.config';
 import PageContainer from '../../../components/layout/PageContainer';
 import { Calendar, Edit, Crown, ShoppingBag, Utensils } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import SubscriptionEnded from './SubscriptionEnded';
 
 interface DayPreferences {
   sabzi1?: string;
@@ -79,11 +81,11 @@ const MySubscription: React.FC = () => {
     },
     onSuccess: (tomorrow) => {
       setIsSkipModalOpen(false);
-      alert(`Successfully skipped delivery for ${tomorrow.toLocaleDateString()}. Your subscription has been extended by 1 day.`);
+      toast.success(`Successfully skipped delivery for ${tomorrow.toLocaleDateString()}. Your subscription has been extended by 1 day.`);
       queryClient.invalidateQueries({ queryKey: ['mySubscription'] });
     },
     onError: () => {
-      alert("Failed to skip delivery. Please try again.");
+      toast.error("Failed to skip delivery. Please try again.");
     }
   });
 
@@ -99,9 +101,10 @@ const MySubscription: React.FC = () => {
     onSuccess: () => {
       setIsCancelModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['mySubscription'] });
+      toast.success("Subscription cancelled successfully.");
     },
     onError: () => {
-      alert("Failed to cancel subscription");
+      toast.error("Failed to cancel subscription");
     }
   });
 
@@ -145,6 +148,10 @@ const MySubscription: React.FC = () => {
     return null;
   }
 
+  if (subscription.status === 'Cancelled' || subscription.status === 'Expired') {
+    return <SubscriptionEnded subscription={subscription} />;
+  }
+
   return (
     <PageContainer className="py-10">
       <div className="mb-8">
@@ -184,7 +191,7 @@ const MySubscription: React.FC = () => {
 
             <div className="bg-white rounded-lg p-4 mb-6">
               <p className="text-sm text-text-secondary mb-2">Delivery Address</p>
-              <p className="text-text-primary">{subscription.deliveryAddress || 'Not specified'}</p>
+              <p className="text-text-primary break-words">{subscription.deliveryAddress || 'Not specified'}</p>
             </div>
 
             <div className="flex flex-col sm:flex-row flex-wrap gap-3">

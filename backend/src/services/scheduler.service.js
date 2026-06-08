@@ -47,6 +47,71 @@ class SchedulerService {
           return;
         }
 
+        // Prevent duplicate daily orders
+        const existingOrderSnapshot = await db.collection("orders")
+            .where("userId", "==", sub.userId)
+            .where("deliveryDate", "==", todayString)
+            .where("generatedByScheduler", "==", true)
+            .limit(1)
+            .get();
+
+        if (!existingOrderSnapshot.empty) {
+            console.log(`Order already generated for user ${sub.userId} today.`);
+            return;
+        }
+
+        // Resolve actual meal contents for the day
+        const dayName = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(today).toLowerCase();
+        
+        // Skip Sundays
+        if (dayName === "sunday") {
+           console.log(`Skipping order for user ${sub.userId} (Sunday)`);
+           return;
+        }
+
+        const CustomizationModel = require("../models/customization.model");
+        const MenuModel = require("../models/menu.model");
+        const customization = await CustomizationModel.getBySubscription(sub.subscriptionId);
+        let todayPreference = customization?.preferences ? customization.preferences[dayName] : null;
+
+        let finalPreference = {};
+        const dayMenu = MenuModel.getDayMenu(sub.plan, dayName);
+        if (dayMenu) {
+          if (dayMenu.isSaturdaySpecial) {
+            finalPreference.specialFood = dayMenu.specialFoodOptions ? dayMenu.specialFoodOptions[0] : "Chef's Special";
+            finalPreference.dessert = dayMenu.dessertOptions ? dayMenu.dessertOptions[0] : "Sweet";
+          } else {
+            if (dayMenu.sabziSet1) finalPreference.sabzi1 = dayMenu.sabziSet1[0];
+            if (dayMenu.sabziSet2) finalPreference.sabzi2 = dayMenu.sabziSet2[0];
+            if (dayMenu.sabziOptions) {
+              finalPreference.sabzi1 = dayMenu.sabziOptions[0];
+              if (dayMenu.sabziOptions.length > 1 && (sub.plan.toLowerCase() === "standard" || sub.plan.toLowerCase() === "premium")) {
+                finalPreference.sabzi2 = dayMenu.sabziOptions[1];
+              }
+            }
+          }
+          if (dayMenu.roti) finalPreference.roti = `${dayMenu.roti} Roti`;
+          if (dayMenu.raitaType) finalPreference.raita = dayMenu.raitaType;
+          else if (dayMenu.raita) finalPreference.raita = "Raita";
+        }
+
+        // Merge user's customizations over defaults
+        if (todayPreference && Object.keys(todayPreference).length > 0) {
+          finalPreference = { ...finalPreference, ...todayPreference };
+        }
+
+        // Clean up empty fields
+        Object.keys(finalPreference).forEach(key => {
+          if (finalPreference[key] === null || finalPreference[key] === undefined || finalPreference[key] === '') {
+            delete finalPreference[key];
+          }
+        });
+
+        // If nothing was resolved, fallback to a default label
+        if (Object.keys(finalPreference).length === 0) {
+          finalPreference = { meal: `Default ${sub.plan} Menu` };
+        }
+
         // Create the Daily Order
         const orderData = {
           userId: sub.userId,
@@ -56,7 +121,7 @@ class SchedulerService {
             sub.deliveryAddress || userData.address || "No Address Provided",
           orderType: "Subscription",
           plan: sub.plan, // e.g. "Weekly Plan"
-          items: [{ name: "Daily Meal", quantity: 1, price: 0 }],
+          items: finalPreference, // Store the exact meal items!
           price: 0, // Already paid via subscription
           deliveryDate: todayString,
           paymentMethod: "Prepaid (Subscription)",

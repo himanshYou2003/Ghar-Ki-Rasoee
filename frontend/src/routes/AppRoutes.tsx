@@ -20,6 +20,8 @@ import AdminDashboard from '../pages/admin/Dashboard/AdminDashboard';
 import AdminSubscriptions from '../pages/admin/Subscription/AdminSubscriptions';
 import TodayDeliveries from '../pages/admin/Subscription/TodayDeliveries';
 import ViewCustomerCustomization from '../pages/admin/Subscription/ViewCustomerCustomization';
+import AdminUsers from '../pages/admin/Users/AdminUsers';
+import AdminUserDetail from '../pages/admin/Users/AdminUserDetail';
 import { useAuth } from '../context/AuthContext';
 
 const NotFound = () => <div className="p-10 text-3xl font-center">404 Not Found</div>;
@@ -77,6 +79,8 @@ const AppRoutes = () => {
           <AdminLayout />
         </AdminRoute>
       }>
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="users/:userId" element={<AdminUserDetail />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="deliveries" element={<TodayDeliveries />} />

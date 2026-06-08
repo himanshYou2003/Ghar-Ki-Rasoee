@@ -3,7 +3,7 @@ import { useAuth } from '../../../context/AuthContext';
 import axios from 'axios';
 import { ENV } from '../../../config/env.config';
 import PageContainer from '../../../components/layout/PageContainer';
-import { Clock, ShoppingBag, LogOut } from 'lucide-react';
+import { Clock, ShoppingBag, LogOut, X, AlertCircle } from 'lucide-react';
 import { Order } from '../../../types/order';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../../config/firebase.config';
@@ -14,6 +14,7 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'active' | 'history' | 'activity'>('active');
 
@@ -25,8 +26,15 @@ const Dashboard: React.FC = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const ordersRes = await axios.get(`${ENV.API_URL}/orders`, { headers });
-
         setOrders(ordersRes.data.data || []);
+
+        try {
+          const notifRes = await axios.get(`${ENV.API_URL}/auth/notifications`, { headers });
+          setNotifications(notifRes.data.data || []);
+        } catch (e) {
+          console.error("Failed to fetch notifications", e);
+        }
+
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -50,6 +58,18 @@ const Dashboard: React.FC = () => {
   const handleLogout = async () => {
     await auth.signOut();
     navigate('/login');
+  };
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      const token = await user?.getIdToken();
+      await axios.patch(`${ENV.API_URL}/auth/notifications/${notificationId}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(prev => prev.filter(n => n.notificationId !== notificationId));
+    } catch (e) {
+      console.error("Failed to mark notification as read", e);
+    }
   };
 
   const StatusBadge = ({ status }: { status: string }) => {
@@ -83,6 +103,22 @@ const Dashboard: React.FC = () => {
           <LogOut size={18} /> Sign Out
         </button>
       </div>
+
+      {/* Notifications */}
+      {notifications.filter(n => !n.read).map(n => (
+        <div key={n.notificationId} className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm flex items-start justify-between">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 text-red-500"><AlertCircle size={20} /></div>
+            <div>
+              <h3 className="font-bold text-red-800">{n.title}</h3>
+              <p className="text-sm text-red-700 mt-1">{n.message}</p>
+            </div>
+          </div>
+          <button onClick={() => handleMarkAsRead(n.notificationId)} className="text-red-400 hover:text-red-600 transition">
+            <X size={20} />
+          </button>
+        </div>
+      ))}
 
       {todayMealOrder && <TodayMealTracking order={todayMealOrder} />}
 

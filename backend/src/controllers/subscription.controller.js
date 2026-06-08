@@ -23,11 +23,11 @@ class SubscriptionController {
       const existing = await SubscriptionModel.getUserSubscription(uid);
 
       if (existing) {
-        // For simplicity, we can error out or just update/overwrite.
-        // Let's allow overwriting for now (or maybe user wants to change plan).
-        // If we strictly follow business logic, we should probably ask to cancel first.
-        // But for this demo, let's just proceed (maybe cancelling old one if we had logic).
-        // console.log("User already has subscription, overwriting/extending...");
+        // Mark the old subscription as Renewed/Replaced
+        await SubscriptionModel.collection.doc(existing.subscriptionId).update({
+          status: "Renewed",
+          updatedAt: new Date().toISOString()
+        });
       }
 
       const planData = {
@@ -57,8 +57,8 @@ class SubscriptionController {
       const ActivityModel = require("../models/activity.model");
       await ActivityModel.logActivity(uid, {
         type: "subscription",
-        action: "created",
-        description: `Created ${plan.name || plan} subscription plan`,
+        action: existing ? "renew" : "created",
+        description: existing ? `Renewed ${plan.name || plan} subscription plan` : `Created ${plan.name || plan} subscription plan`,
         metadata: {
           plan: plan.name || plan,
           subscriptionId: newSub.subscriptionId,
@@ -119,6 +119,27 @@ class SubscriptionController {
         cancellationReason: reason,
         updatedAt: new Date().toISOString(),
       });
+
+      // Also cancel any pending/cooking orders for today or future
+      const todayString = new Date().toISOString().split("T")[0];
+      const admin = require("../config/firebase.config");
+      const db = admin.firestore();
+      const pendingOrdersSnapshot = await db.collection("orders")
+        .where("userId", "==", uid)
+        .where("deliveryDate", ">=", todayString)
+        .where("status", "in", ["Cooking", "Confirmed"])
+        .get();
+
+      if (!pendingOrdersSnapshot.empty) {
+        const batch = db.batch();
+        pendingOrdersSnapshot.forEach(orderDoc => {
+          batch.update(orderDoc.ref, {
+            status: "Cancelled",
+            updatedAt: new Date().toISOString()
+          });
+        });
+        await batch.commit();
+      }
 
       // Log activity
       const ActivityModel = require("../models/activity.model");

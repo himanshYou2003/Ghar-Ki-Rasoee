@@ -8,7 +8,7 @@ class CustomizationController {
    */
   static async savePreferences(req, res) {
     try {
-      const { userId } = req.user; // From auth middleware
+      const { uid: userId } = req.user; // From auth middleware
       const { subscriptionId, preferences } = req.body;
 
       if (!subscriptionId || !preferences) {
@@ -96,7 +96,7 @@ class CustomizationController {
    */
   static async getUserPreferences(req, res) {
     try {
-      const { userId } = req.user;
+      const { uid: userId } = req.user;
 
       const cachedCustomizations = cache.get(`user_customization_${userId}`);
       if (cachedCustomizations) {

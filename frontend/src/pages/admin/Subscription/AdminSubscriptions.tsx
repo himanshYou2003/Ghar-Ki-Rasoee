@@ -9,6 +9,7 @@ import {
   Trash2,
   CheckCircle
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Subscription {
@@ -56,9 +57,10 @@ const AdminSubscriptions: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSubscriptions'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      toast.success("Subscription deleted successfully");
     },
     onError: () => {
-      alert("Failed to delete subscription");
+      toast.error("Failed to delete subscription");
     }
   });
 

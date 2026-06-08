@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, LogOut, Menu, CreditCard, Truck } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, LogOut, Menu, CreditCard, Truck, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminLayout: React.FC = () => {
@@ -18,6 +18,7 @@ const AdminLayout: React.FC = () => {
   };
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+    { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: Truck, label: 'Deliveries', path: '/admin/deliveries' },
     { icon: ShoppingBag, label: 'Orders', path: '/admin/orders' },
     { icon: CreditCard, label: 'Subscriptions', path: '/admin/subscriptions' },

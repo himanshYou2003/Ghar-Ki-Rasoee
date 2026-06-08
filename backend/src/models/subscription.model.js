@@ -39,12 +39,36 @@ class SubscriptionModel {
   static async getUserSubscription(uid) {
     const snapshot = await this.collection
       .where("userId", "==", uid)
-      .where("status", "==", "Active")
-      .limit(1)
       .get();
 
     if (snapshot.empty) return null;
-    return snapshot.docs[0].data();
+
+    // Get all subscriptions and sort by createdAt descending to find the latest
+    const subscriptions = snapshot.docs.map(doc => doc.data());
+    subscriptions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    const latestSub = subscriptions[0];
+
+    // Check if it's active but the end date has passed
+    if (latestSub.status === "Active" && latestSub.endDate) {
+      // Set to start of today for comparison, or direct timestamp? 
+      // A direct timestamp comparison works if endDate is an ISO string of the exact expiry time.
+      const endDate = new Date(latestSub.endDate);
+      const now = new Date();
+      
+      if (endDate < now) {
+        // It has expired. Update database.
+        latestSub.status = "Expired";
+        latestSub.updatedAt = new Date().toISOString();
+        
+        await this.collection.doc(latestSub.subscriptionId).update({
+          status: "Expired",
+          updatedAt: latestSub.updatedAt
+        });
+      }
+    }
+
+    return latestSub;
   }
 
   static async skipDate(subscriptionId, date, currentEndDate) {

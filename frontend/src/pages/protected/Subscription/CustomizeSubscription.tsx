@@ -5,7 +5,9 @@ import axios from 'axios';
 import { ENV } from '../../../config/env.config';
 import PageContainer from '../../../components/layout/PageContainer';
 import { menuData, DayMenu } from '../../../data/menuData';
+import { toast } from 'sonner';
 import { Check, ChevronLeft, Save, Star, Sparkles } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DayPreferences {
   sabzi1?: string;
@@ -26,6 +28,7 @@ interface WeeklyPreferences {
 const CustomizeSubscription: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,9 +72,40 @@ const CustomizeSubscription: React.FC = () => {
         
         // Determine plan type from subscription
         const plan = res.data.data.plan.toLowerCase();
-        if (plan.includes('basic')) setPlanType('basic');
-        else if (plan.includes('premium')) setPlanType('premium');
-        else setPlanType('standard');
+        let currentPlanType: 'basic' | 'standard' | 'premium' = 'standard';
+        if (plan.includes('basic')) currentPlanType = 'basic';
+        else if (plan.includes('premium')) currentPlanType = 'premium';
+        
+        setPlanType(currentPlanType);
+
+        const getDefaultPrefs = (pType: 'basic' | 'standard' | 'premium'): WeeklyPreferences => {
+          const wMenu = menuData.weeklyMenus[pType];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const defaults: any = {};
+          days.forEach(day => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const dMenu = wMenu[day as keyof typeof wMenu] as any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const dayPrefs: any = {};
+            if (dMenu.isSaturdaySpecial) {
+              if (dMenu.specialFoodOptions) dayPrefs.specialFood = dMenu.specialFoodOptions[0];
+              if (dMenu.dessertOptions) dayPrefs.dessert = dMenu.dessertOptions[0];
+            } else {
+              if (dMenu.sabziSet1) dayPrefs.sabzi1 = dMenu.sabziSet1[0];
+              if (dMenu.sabziSet2) dayPrefs.sabzi2 = dMenu.sabziSet2[0];
+              if (dMenu.sabziOptions) {
+                dayPrefs.sabzi1 = dMenu.sabziOptions[0];
+                if (dMenu.sabziOptions.length > 1 && pType !== 'basic') {
+                  dayPrefs.sabzi2 = dMenu.sabziOptions[1];
+                }
+              }
+            }
+            defaults[day] = dayPrefs;
+          });
+          return defaults;
+        };
+
+        const defaultPreferences = getDefaultPrefs(currentPlanType);
 
         // Load existing preferences if available
         const customRes = await axios.get(
@@ -80,7 +114,16 @@ const CustomizeSubscription: React.FC = () => {
         );
 
         if (customRes.data.data?.customization?.preferences) {
-          setPreferences(customRes.data.data.customization.preferences);
+          const savedPrefs = customRes.data.data.customization.preferences;
+          const mergedPrefs = { ...defaultPreferences };
+          days.forEach(day => {
+            if (savedPrefs[day] && Object.keys(savedPrefs[day]).length > 0) {
+              mergedPrefs[day as keyof WeeklyPreferences] = savedPrefs[day];
+            }
+          });
+          setPreferences(mergedPrefs);
+        } else {
+          setPreferences(defaultPreferences);
         }
       } catch (error) {
         console.error("Failed to fetch subscription", error);
@@ -128,11 +171,13 @@ const CustomizeSubscription: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert('Preferences saved successfully!');
+      toast.success('Preferences saved successfully!');
+      queryClient.invalidateQueries({ queryKey: ['myCustomization'] });
+      queryClient.invalidateQueries({ queryKey: ['adminDeliveries'] });
       navigate('/my-subscription');
     } catch (error) {
       console.error('Failed to save preferences', error);
-      alert('Failed to save preferences. Please try again.');
+      toast.error('Failed to save preferences. Please try again.');
     } finally {
       setSaving(false);
     }

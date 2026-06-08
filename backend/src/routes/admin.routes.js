@@ -21,4 +21,12 @@ router.delete(
   AdminController.deleteSubscription,
 );
 
+// User Management
+router.get("/users", AdminController.getAllUsers);
+router.get("/users/:userId", AdminController.getUserDetail);
+router.post(
+  "/users/:userId/cancel-subscription",
+  AdminController.adminCancelSubscription,
+);
+
 module.exports = router;

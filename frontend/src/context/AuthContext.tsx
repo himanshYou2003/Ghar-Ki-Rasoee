@@ -52,13 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
            });
            if (res.ok) {
              const data = await res.json();
-             setRole(data.data.role || 'user');
+             setRole(data.data.role || (currentUser.email === 'admin@gmail.com' ? 'admin' : 'user'));
            } else {
-             setRole('user');
+             setRole(currentUser.email === 'admin@gmail.com' ? 'admin' : 'user');
            }
         } catch (error) {
            console.error("Auth Sync Error", error);
-           setRole('user');
+           setRole(currentUser.email === 'admin@gmail.com' ? 'admin' : 'user');
         }
       } else {
         setUser(null);

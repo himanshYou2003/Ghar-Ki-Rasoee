@@ -15,6 +15,7 @@ import {
   Search,
   RefreshCw
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Delivery {
@@ -68,12 +69,11 @@ const TodayDeliveries: React.FC = () => {
       });
     },
     onSuccess: () => {
-      alert("Daily orders generated successfully!");
-      queryClient.invalidateQueries({ queryKey: ['adminDeliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      toast.success("Daily orders generated successfully!");
+      window.location.reload();
     },
     onError: () => {
-      alert("Failed to trigger scheduler. Check server logs.");
+      toast.error("Failed to trigger scheduler. Check server logs.");
     }
   });
 
@@ -111,12 +111,13 @@ const TodayDeliveries: React.FC = () => {
       if (context?.previousData) {
         queryClient.setQueryData(['adminDeliveries'], context.previousData);
       }
-      alert("Failed to update status. Please try again.");
+      toast.error("Failed to update status. Please try again.");
     },
     onSettled: () => {
       // Always refetch after error or success to ensure we're in sync with the server
       queryClient.invalidateQueries({ queryKey: ['adminDeliveries'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
     },
   });
 
@@ -146,6 +147,13 @@ const TodayDeliveries: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-4">
+            <button 
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['adminDeliveries'] })}
+                className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-3 rounded-xl font-bold hover:bg-gray-50 transition shadow-sm"
+                title="Refresh Data"
+            >
+                <RefreshCw size={20} />
+            </button>
             <button 
                 onClick={() => triggerSchedulerMutation.mutate()}
                 disabled={triggerSchedulerMutation.isPending}
@@ -314,14 +322,17 @@ const TodayDeliveries: React.FC = () => {
                         </div>
                         <select 
                             value={delivery.deliveryStatus}
+                            disabled={!delivery.orderId}
+                            title={!delivery.orderId ? "Please run daily scheduler first" : "Update status"}
                             onChange={(e) => {
                                 if (delivery.orderId) {
                                     updateStatusMutation.mutate({ orderId: delivery.orderId, newStatus: e.target.value });
                                 } else {
-                                    alert("No order record found for today's delivery.");
+                                    toast.error("Orders haven't been generated for today yet. Please click 'RUN DAILY SCHEDULER' at the top of the page first.");
                                 }
                             }}
                             className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer border-2 outline-none ${
+                                !delivery.orderId ? 'opacity-50 cursor-not-allowed bg-gray-100' :
                                 delivery.deliveryStatus === 'Delivered'
                                     ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
                                     : delivery.deliveryStatus === 'Out for Delivery'
@@ -340,7 +351,7 @@ const TodayDeliveries: React.FC = () => {
                     
                     <div className="pt-2">
                         <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-2 px-1">Tiffin Contents</p>
-                        {delivery.todayCustomization ? (
+                        {delivery.todayCustomization && Object.keys(delivery.todayCustomization).length > 0 ? (
                             <div className="grid grid-cols-2 gap-3">
                                 {Object.entries(delivery.todayCustomization).map(([key, value]) => (
                                     <div key={key} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
@@ -354,7 +365,7 @@ const TodayDeliveries: React.FC = () => {
                                <div className="p-2 bg-white rounded-lg text-blue-500 shadow-sm">
                                    <AlertCircle size={18} />
                                </div>
-                               <span className="text-xs font-bold font-mono uppercase tracking-tight">STANDARD {delivery.plan} MENU</span>
+                               <span className="text-xs font-bold font-mono uppercase tracking-tight">DEFAULT {delivery.plan.toUpperCase()} MENU</span>
                             </div>
                         )}
                     </div>
@@ -364,7 +375,7 @@ const TodayDeliveries: React.FC = () => {
               <div className="p-4 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between group-hover:bg-primary/5 transition-colors">
                   <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
                       <Clock size={12} />
-                      <span>Delivery ID: {delivery.subscriptionId.slice(0, 8)}</span>
+                      <span>Order ID: {delivery.orderId ? `#${delivery.orderId.slice(0, 8)}` : 'Pending'}</span>
                   </div>
                   <button 
                     onClick={() => navigate(`/admin/deliveries/customization/${delivery.subscriptionId}`)}

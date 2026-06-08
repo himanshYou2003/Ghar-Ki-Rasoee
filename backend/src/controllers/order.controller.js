@@ -127,6 +127,12 @@ class OrderController {
       }
 
       const updated = await OrderModel.updateStatus(orderId, status);
+      
+      // Clear cache
+      const cache = require("../utils/cache.util");
+      cache.delete("admin_dashboard_stats");
+      cache.delete("admin_today_deliveries");
+
       ResponseUtil.send(res, 200, "Order status updated", updated);
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -141,6 +147,12 @@ class OrderController {
       if (!orderId) return ResponseUtil.error(res, 400, "Order ID is required");
 
       await OrderModel.collection.doc(orderId).delete();
+
+      // Clear cache
+      const cache = require("../utils/cache.util");
+      cache.delete("admin_dashboard_stats");
+      cache.delete("admin_today_deliveries");
+
       ResponseUtil.send(res, 200, "Order deleted successfully", { orderId });
     } catch (error) {
       console.error("Error deleting order:", error);

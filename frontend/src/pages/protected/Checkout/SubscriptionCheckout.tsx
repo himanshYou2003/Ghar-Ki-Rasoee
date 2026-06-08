@@ -15,13 +15,13 @@ const SubscriptionCheckout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { plan } = location.state || {};
+  const { plan, address: prefilledAddress } = location.state || {};
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(prefilledAddress || '');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('card');
   const [paymentResult, setPaymentResult] = useState<{ transactionId: string } | null>(null);
 
@@ -158,7 +158,7 @@ const SubscriptionCheckout: React.FC = () => {
               <div className="p-4 bg-gray-50 rounded-lg mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-semibold text-lg">{plan.name} Plan</span>
-                  <span className="font-bold text-xl text-primary">₹{plan.price}/mo</span>
+                  <span className="font-bold text-xl text-primary">${plan.price}/mo</span>
                 </div>
                 <ul className="space-y-2 text-sm text-gray-600 mt-4">
                   {plan.features.map((f: string, i: number) => (
@@ -170,7 +170,7 @@ const SubscriptionCheckout: React.FC = () => {
               </div>
               <div className="flex justify-between font-bold text-lg border-t pt-4">
                 <span>Total</span>
-                <span>₹{plan.price.toFixed(2)}</span>
+                <span>${plan.price.toFixed(2)}</span>
               </div>
             </div>
           </div>

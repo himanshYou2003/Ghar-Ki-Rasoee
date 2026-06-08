@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Order } from '../../../types/order';
 import { Search, MapPin, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 const AdminOrders: React.FC = () => {
   const { user } = useAuth();
@@ -46,10 +47,12 @@ const AdminOrders: React.FC = () => {
       if (context?.previousOrders) {
         queryClient.setQueryData(['adminOrders'], context.previousOrders);
       }
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['adminDeliveries'] });
+      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
     },
   });
 
@@ -62,9 +65,12 @@ const AdminOrders: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['adminDeliveries'] });
+      queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      toast.success("Order deleted successfully");
     },
     onError: () => {
-      alert("Failed to delete order");
+      toast.error("Failed to delete order");
     }
   });
 
@@ -153,11 +159,23 @@ const AdminOrders: React.FC = () => {
                 <span className="text-gray-400 w-4">📍</span>
                 <span className="truncate">{order.deliveryAddress || 'No address'}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400 w-4">🥗</span>
-                <span className={getPlanStyles(order.plan)}>
-                   {order.plan || Object.keys(order.items || {}).length + ' items'}
-                </span>
+              <div className="flex items-start gap-2">
+                <span className="text-gray-400 w-4 mt-0.5">🥗</span>
+                <div className="flex flex-col">
+                    <span className={getPlanStyles(order.plan)}>
+                        {order.plan || (Array.isArray(order.items) ? order.items.length + ' items' : 'Items')}
+                    </span>
+                    {order.orderType === 'Subscription' && order.items && !Array.isArray(order.items) && (
+                        <span className="text-xs text-gray-400 mt-0.5">
+                            {Object.values(order.items).join(', ')}
+                        </span>
+                    )}
+                    {order.orderType === 'Subscription' && Array.isArray(order.items) && order.items[0]?.name && order.items[0]?.name !== 'Daily Meal' && (
+                        <span className="text-xs text-gray-400 mt-0.5">
+                            {order.items.map((i: any) => i.name).join(', ')}
+                        </span>
+                    )}
+                </div>
               </div>
             </div>
 
@@ -232,10 +250,22 @@ const AdminOrders: React.FC = () => {
                         <span className="italic text-gray-400">Address not set</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm max-w-xs truncate">
-                    <span className={getPlanStyles(order.plan)}>
-                        {order.plan || Object.keys(order.items || {}).length + ' items'}
-                    </span>
+                  <td className="px-6 py-4 text-sm max-w-[200px] truncate" title={order.orderType === 'Subscription' && order.items && !Array.isArray(order.items) ? Object.values(order.items).join(', ') : ''}>
+                    <div className="flex flex-col">
+                        <span className={getPlanStyles(order.plan)}>
+                            {order.plan || (Array.isArray(order.items) ? order.items.length + ' items' : 'Items')}
+                        </span>
+                        {order.orderType === 'Subscription' && order.items && !Array.isArray(order.items) && (
+                            <span className="text-xs text-gray-400 mt-1 truncate">
+                                {Object.values(order.items).join(', ')}
+                            </span>
+                        )}
+                        {order.orderType === 'Subscription' && Array.isArray(order.items) && order.items[0]?.name && order.items[0]?.name !== 'Daily Meal' && (
+                            <span className="text-xs text-gray-400 mt-1 truncate">
+                                {order.items.map((i: any) => i.name).join(', ')}
+                            </span>
+                        )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
